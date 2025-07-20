@@ -9,14 +9,17 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
+
 public class Account implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(unique = true)
     private String username;
 
+    @Column(length = 100)
     private String password;
 
     private BigDecimal balance;
@@ -97,21 +100,21 @@ public class Account implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;  // You can add real logic here
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;  // You can add real logic here
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;  // You can add real logic here
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return true;  // You can add real logic here
+        return true;
     }
 }

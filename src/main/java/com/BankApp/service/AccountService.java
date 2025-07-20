@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AccountService implements UserDetailsService {
@@ -26,21 +27,47 @@ public class AccountService implements UserDetailsService {
 
     @Autowired
     private AccountRepository accountRepository ;
-    private  TransactionRepository transactionRepository ;
+
+   @Autowired
+   private  TransactionRepository transactionRepository ;
     public Account findAccountByUsername(String userName) {
         return accountRepository.findByUsername(userName).orElseThrow(() -> new RuntimeException("Account not found"));
     }
 
-    public Object registerAccount(String userName , String password) {
+    public void registerAccount(String userName , String password) {
+        String hashedPassword = passwordEncoder.encode(password);
          if(accountRepository.findByUsername(userName).isPresent()) {
-             return new RuntimeException("user Already exist") ;
+             throw new RuntimeException("User already exists");
          }
          Account account = new Account();
          account.setUsername(userName);
-         account.setPassword(passwordEncoder.encode(password));
+        account.setPassword(hashedPassword);
          account.setBalance(BigDecimal.ZERO);
-         return  accountRepository.save(account) ;
+        System.out.println("Registered user: " + account.getUsername() + ", password (encoded): " + account.getPassword());
+        accountRepository.save(account);
     }
+
+    public boolean login(String username, String password) {
+        Optional<Account> optional = accountRepository.findByUsername(username);
+
+        if (optional.isEmpty()) {
+            System.out.println("NOT FOUND in DB for username: " + username);
+            return false;
+        }
+
+        Account account = optional.get();
+
+        System.out.println("RAW password: " + password);
+        System.out.println("STORED encoded: " + account.getPassword());
+
+        boolean matched = passwordEncoder.matches(password, account.getPassword());
+        System.out.println("Password matched: " + matched);
+
+        return true;
+    }
+
+
+
 
     public void deposit(Account account , BigDecimal amount) {
        account.setBalance(account.getBalance().add(amount));
